@@ -1,10 +1,15 @@
 let counter = 0;
 let connected = false;
 let controls = require("ble_hid_controls");
+let config = {
+  single: next,
+  double: playpause,
+  triple: previous,
+};
 
 NRF.setServices(undefined, { hid: controls.report });
 
-function single() {
+function next() {
   if (connected) {
     digitalWrite(LED3, true);
     setTimeout(function() { //Confirm with green blink
@@ -19,7 +24,7 @@ function single() {
   }
 }
 
-function double() {
+function playpause() {
   if (connected) {
     digitalWrite(LED3, true);
     setTimeout(function() {
@@ -34,7 +39,7 @@ function double() {
   }
 }
 
-function triple() {
+function previous() {
   if (connected) {
     digitalWrite(LED3, true);
     setTimeout(function() {
@@ -69,17 +74,19 @@ let watchID = setWatch(function buttonEvaluation() {
   let evalDuration = 600; //wait for 2nd or 3rd button press before evaluating counter
   counter++;
   setTimeout(() => {
-    if (counter === 3) {
-      triple();
-      counter = 0;
-    } else if (counter === 2) {
-      double();
-      counter = 0;
-    } else if (counter === 1) {
-      single();
-      counter = 0;
-    } else {
-      counter = 0;
+    switch (counter) {
+      case 3:
+        config.triple();
+      break;
+      case 2:
+        config.double();
+      break;
+      case 1:
+        config.single();
+      break;
     }
+    // Reset the counter once we're done.
+    counter = 0;
+
   }, evalDuration);
 }, BTN, { edge: "rising", debounce: 5, repeat: true });
