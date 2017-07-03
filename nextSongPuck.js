@@ -34,7 +34,7 @@ function double() {
   }
 }
 
-function tripple() {
+function triple() {
   if (connected) {
     digitalWrite(LED3, true);
     setTimeout(function() {
@@ -70,7 +70,7 @@ let watchID = setWatch(function buttonEvaluation() {
   counter++;
   setTimeout(() => {
     if (counter === 3) {
-      tripple();
+      triple();
       counter = 0;
     } else if (counter === 2) {
       double();
