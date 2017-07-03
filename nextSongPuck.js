@@ -1,39 +1,30 @@
-let counter = 0;
-let connected = false;
 let controls = require("ble_hid_controls");
-let config = {
-  single: next,
-  double: playpause,
-  triple: previous,
-};
-
 NRF.setServices(undefined, { hid: controls.report });
 
-function flash(led) {
+let next, playpause, previous;
+let counter = 0;
+let connected = false;
+
+
+// flash the led for an amount of time
+function flash(led, time) {
+  if (typeof time !== "number") {
+      time = 500;
+  }
   digitalWrite(led, true);
   setTimeout(function () {
     digitalWrite(led, false);
-  }, 500);
+  }, time);
 }
 function flashAndCall(cb) {
   if (connected) {
+    // blue when it is connected
     flash(LED3);
     cb();
   } else {
+    // red when it's not connected
     flash(LED1);
   }
-}
-
-function next() {
-  flashAndCall(controls.next);
-}
-
-function playpause() {
-  flashAndCall(controls.playpause);
-}
-
-function previous() {
-  flashAndCall(controls.prev);
 }
 
 NRF.on('connect', function(addr) {
@@ -43,10 +34,31 @@ NRF.on('connect', function(addr) {
 
 NRF.on('disconnect', function(reason) {
   connected = false; //reset everything on disconnect
-  digitalWrite(LED1, false);
-  digitalWrite(LED2, false);
-  digitalWrite(LED3, false);
+  digitalWrite(LED1, false); //r
+  digitalWrite(LED2, false); //g
+  digitalWrite(LED3, false); //b
 });
+
+// define next, playpause, previous functions
+next = function() {
+  flashAndCall(controls.next);
+};
+
+playpause = function() {
+  flashAndCall(controls.playpause);
+};
+
+previous = function() {
+  flashAndCall(controls.prev);
+};
+
+// bind them
+let binds = {
+  single: next,
+  double: playpause,
+  triple: previous,
+};
+
 
 //trigger buttonEvaluation whenever the button is pressed
 let watchID = setWatch(function buttonEvaluation() {
@@ -55,13 +67,13 @@ let watchID = setWatch(function buttonEvaluation() {
   setTimeout(() => {
     switch (counter) {
       case 3:
-        config.triple();
+        binds.triple();
       break;
       case 2:
-        config.double();
+        binds.double();
       break;
       case 1:
-        config.single();
+        binds.single();
       break;
     }
     // Reset the counter once we're done.
