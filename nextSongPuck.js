@@ -9,57 +9,36 @@ let config = {
 
 NRF.setServices(undefined, { hid: controls.report });
 
-function next() {
+function flash(led) {
+  digitalWrite(led, true);
+  setTimeout(function () {
+    digitalWrite(led, false);
+  }, 500);
+}
+function flashAndCall(cb) {
   if (connected) {
-    digitalWrite(LED3, true);
-    setTimeout(function() { //Confirm with green blink
-      digitalWrite(LED3, false);
-    }, 500);
-    controls.next(); // Skip to next song
+    flash(LED3);
+    cb();
   } else {
-    digitalWrite(LED1, true);
-    setTimeout(function() { //Red blink as error message when not connected
-      digitalWrite(LED1, false);
-    }, 500);
+    flash(LED1);
   }
+}
+
+function next() {
+  flashAndCall(controls.next);
 }
 
 function playpause() {
-  if (connected) {
-    digitalWrite(LED3, true);
-    setTimeout(function() {
-      digitalWrite(LED3, false);
-    }, 500);
-    controls.playpause(); // Play/stop music
-  } else {
-    digitalWrite(LED1, true);
-    setTimeout(function() {
-      digitalWrite(LED1, false);
-    }, 500);
-  }
+  flashAndCall(controls.playpause);
 }
 
 function previous() {
-  if (connected) {
-    digitalWrite(LED3, true);
-    setTimeout(function() {
-      digitalWrite(LED3, false);
-    }, 500);
-    controls.prev(); // Go to previous song
-  } else {
-    digitalWrite(LED1, true);
-    setTimeout(function() {
-      digitalWrite(LED1, false);
-    }, 500);
-  }
+  flashAndCall(controls.prev);
 }
 
 NRF.on('connect', function(addr) {
   connected = true;
-  digitalWrite(LED2, true); //confirm successfull connection with green blink
-  setTimeout(function() {
-    digitalWrite(LED2, false);
-  }, 500);
+  flash(LED2);
 });
 
 NRF.on('disconnect', function(reason) {
